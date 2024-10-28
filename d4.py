@@ -25,6 +25,7 @@ class GameController:
         self.type = tsk['event_type']
         self.mode = tsk['mode']
         self.event_route = os.path.join('res', self.type)
+        os.makedirs(self.screen.split('\\')[0], exist_ok=True)
         return
 
     def __update_config(self, config: dict):
@@ -110,9 +111,10 @@ class GameController:
         stat = ip.get_stat(screen=self.screen, stat_route=self.stat_route)[0]
         if stat and stat != self.pre_stat:
             self.__echo('Current status: %s' % stat)
-        self.__btn_clk(stat=stat)
+        clicked = self.__btn_clk(stat=stat)
         self.pre_stat = stat
-        time.sleep(brt)
+        # if clicked:
+        #     time.sleep(brt)
 
     def play(self):
         try:
