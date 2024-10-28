@@ -80,4 +80,4 @@ You may delete the old images in the `live` folder since that's my background.
 ## Finally
 Enjoy your playing D4DJ.
 You are welcome to contact me if you have any problems with the script
-(since it's highly uncompleted)
+(since it's highly uncompleted).
