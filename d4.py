@@ -77,6 +77,7 @@ class GameController:
                     if l == (-1, -1):
                         return False
                 x, y = adb.click(l, w, h)
+                time.sleep(0.5)
                 if x > 0 and y > 0:
                     self.__echo('Click @ (%s, %s)' % (x, y))
                 else:
@@ -89,6 +90,9 @@ class GameController:
         st, loc, h, w = ip.get_stat(screen=self.screen, stat_route=self.exception_route)
         if st:
             if 'empty_volt' in st:
+                if self.mode == 'sp':
+                    adb.click(loc, w, h)
+                    return
                 self.__echo('Voltage Supplement')
                 if self.type == 'battle':
                     adb.click((400, 300), 190, 140)
