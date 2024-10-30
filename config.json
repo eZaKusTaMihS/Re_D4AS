@@ -6,12 +6,14 @@
   "general": {
     "serial": "127.0.0.1:16416",
     "screen_route": "temp\\screen.png",
-    "stat_route": "res\\stat"
+    "stat_route": "res\\stat",
+    "timeout": 5
   },
   "play": {
     "voltage": 1,
     "auto_sup": true,
-    "multi": true
+    "do_vrf": true,
+    "rest_interval": "2:30"
   },
   "tasks": {
     "event_type": "raid",

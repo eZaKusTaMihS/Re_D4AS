@@ -10,6 +10,11 @@ A script for autoplaying D4DJ Groovy Mix (JP only).
 - Add more settings that can be set automatically other than manually in game
 
 ### Recent Updates
+#### Oct 31, 2024
+- Add auto-restart methods to solve possible crash of the game.
+- Provide a solution for being blocked from long-time plays.
+See more information about it [here](#solutions-for-swipe-verification).
+
 #### Oct 26, 2024
 - Add support for event type: raid
 - Voltage supplement fixed
@@ -17,7 +22,7 @@ A script for autoplaying D4DJ Groovy Mix (JP only).
 ## Requirements
 - Get your simulator ready. [MuMu Player 12](https://mumu.163.com) is recommended.
 - Download [the latest version of python](https://www.python.org/downloads/) and follow the instructions to install.
-- Install environment: run `pip install opencv-python==4.10.0.84` in cmd.
+- Install environment: run `pip install opencv-python==4.10.0.84 pygetwindow==0.0.9 keyboard==0.13.5` in cmd.
 - Make sure you've got adb installed (usually comes with the simulator).
 For MuMu user, adb can be found at `MuMuPlayer-12.0\shell\adb.exe`.
 
@@ -46,10 +51,23 @@ You may refer to [Customization](#customization) to customize the script.
 Also make sure to read the [Cautions](#cautions) before running the script.
 
 ### Customization
-In `config.json`, there are two fields under `tasks` you can change.
-- `event_type`: valued among `raid`, `poker`, `yell` and `battle`,
+Here are fields you can change in `config.json`:
+
+#### `general`
+- `timeout`: Number of minutes before the game stays no-response and has to be restarted.
+It should not be less than 5.
+
+#### `play`
+- `do_vrf`: Whether to complete the swipe verification.
+See more info [here](#solutions-for-swipe-verification).
+- `rest_interval`: Time interval between rests to avoid the verification.
+Formatted as `h:mm` (No exceeding 4 hours).
+Also see more info [here](#solutions-for-swipe-verification).
+
+#### `tasks`
+- `event_type`: Valued among `raid`, `poker`, `yell` and `battle`,
 depending on which event type you are running the script for.
-- `mode`: valued among `single`, `multi` and `sp`.
+- `mode`: Valued among `solo`, `multi` and `sp`.
 Some events may not have sp lives and the script may not work under that situation.
 
 More settings, such as voltage recognition, will be added later (probably this year?).
@@ -76,6 +94,19 @@ By the way you are recommended to set your background static
 and screenshot a static part of your live screen and replace the image in the `res/stat/live` folder with it
 to help the script to recognize the live status. Loop time recorder based on live screen may be provided in later updates.
 You may delete the old images in the `live` folder since that's my background.
+
+### Solutions for swipe verification
+#### Fight Against (proved to be feasible)
+Record a route of your passing the verification within your simulator and set the trigger key to `G`.
+Whenever the verification is detected, your simulator window will be activated to front,
+the `G` key will be triggered, and then you'll be able to continue playing.
+
+A problem with it, however, is that the action may interrupt some of your works (especially when you are playing games)
+by popping up the simulator window as the focus. So turn it off if you get crucial works to do.
+
+#### Avoid being blocked (not verified yet)
+Have a 15-minute rest every two and a half hour (preset value can be changed) to avoid being challenged.
+Well I'm not quite sure whether it works, but I wish it could.
 
 ## Finally
 Enjoy your playing D4DJ.

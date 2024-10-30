@@ -1,8 +1,9 @@
+import datetime
+import os
 import time
+
 import adb
 import img_processor as ip
-import os
-import datetime
 
 
 class GameController:
@@ -12,20 +13,25 @@ class GameController:
     logs = []
 
     def __init__(self, config: dict):
+        adb.start()
         self.st_time = datetime.datetime.now()
         general = config['general']
         play = config['play']
         tsk = config['tasks']
-        self.serial = adb.serial = general['serial']
-        self.screen = general['screen_route']
-        self.stat_route = general['stat_route']
-        self.voltage = play['voltage']
-        self.multi = play['multi']
-        self.sup = play['auto_sup']
-        self.type = tsk['event_type']
-        self.mode = tsk['mode']
+        self.serial = adb.serial = str(general['serial'])
+        self.screen = str(general['screen_route'])
+        self.stat_route = str(general['stat_route'])
+        self.timeout = max(5, int(general['timeout']))
+        self.voltage = max(0, int(play['voltage']))
+        self.sup = bool(play['auto_sup'])
+        self.vrf = bool(play['do_vrf'])
+        h, m = str(play['rest_interval']).split(':', maxsplit=1)
+        self.rhr, self.rmn = min(3, abs(int(h))), abs(int(m)) % 60
+        self.type = str(tsk['event_type'])
+        self.mode = str(tsk['mode'])
         self.event_route = os.path.join('res', self.type)
         os.makedirs(self.screen.split('\\')[0], exist_ok=True)
+        self.lc_time = datetime.datetime.now()
         return
 
     def __update_config(self, config: dict):
@@ -58,7 +64,10 @@ class GameController:
     def __btn_clk(self, stat='general'):
         match stat:
             case 'title':
+                adb.click((640, 360))
+            case 'main':
                 adb.click((1130, 570), 110, 110)
+                time.sleep(0.5)
             case 'live_sel':
                 if self.type in ['yell', 'raid']:
                     adb.click((70, 180), 90, 70)
@@ -108,6 +117,22 @@ class GameController:
                 adb.click((660, 490), 200, 60)
                 time.sleep(1.2)
                 adb.click((540, 490), 200, 60)
+            elif st == 'auto_rej' and self.vrf:
+                # Deal with detection
+                import pygetwindow as gw
+                d4w = gw.getWindowsWithTitle('d4dj')
+                if d4w:
+                    d = d4w[0]
+                    d.minimize()
+                    d.restore()
+                    print(gw.getActiveWindow())
+                    time.sleep(1)
+                    # Input recording trigger
+                    import keyboard
+                    keyboard.press_and_release('g')
+                    time.sleep(4)
+                    d.minimize()
+                return
             else:
                 adb.click(loc, w, h)
             time.sleep(brt)
@@ -117,8 +142,18 @@ class GameController:
             self.__echo('Current status: %s' % stat)
         clicked = self.__btn_clk(stat=stat)
         self.pre_stat = stat
-        # if clicked:
-        #     time.sleep(brt)
+        if clicked:
+            self.lc_time = datetime.datetime.now()
+        if not clicked:
+            if datetime.datetime.now() - self.lc_time > datetime.timedelta(minutes=self.timeout):
+                self.__echo('Timeout exceeded, trying to restart')
+                adb.restart()
+        # Timer
+        if (not self.vrf and
+                datetime.datetime.now() - self.st_time > datetime.timedelta(hours=self.rhr, minutes=self.rmn) and
+                stat != 'live'):
+            adb.restart(15)
+            self.st_time = datetime.datetime.now()
 
     def play(self):
         try:
