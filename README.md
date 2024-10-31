@@ -10,6 +10,11 @@ A script for autoplaying D4DJ Groovy Mix (JP only).
 - Add more settings that can be set automatically other than manually in game
 
 ### Recent Updates
+#### Nov 1, 2024
+- Add loop time recorder.
+Now you can see total live times and loop duration in console output and log file.
+Remember to get your live background (see `res/stat/live`) updated.
+
 #### Oct 31, 2024
 - Add auto-restart methods to solve possible crash of the game.
 - Provide a solution for being blocked from long-time plays.
@@ -93,7 +98,7 @@ before starting the script.
 By the way you are recommended to set your background static
 (disable club motion/skill window/groovy effect, set bg to music jacket/character, etc.)
 and screenshot a static part of your live screen and replace the image in the `res/stat/live` folder with it
-to help the script to recognize the live status. Loop time recorder based on live screen may be provided in later updates.
+to help the script to recognize the live status.
 You may delete the old images in the `live` folder since that's my background.
 
 You may also need to replace the images in `/res/stat/main` and `/res/stat/live_sel` to fit your UI theme.

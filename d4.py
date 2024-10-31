@@ -32,6 +32,8 @@ class GameController:
         self.event_route = os.path.join('res', self.type)
         os.makedirs(self.screen.split('\\')[0], exist_ok=True)
         self.lc_time = datetime.datetime.now()
+        self.lv_time = datetime.datetime.now()
+        self.lv_cnt = 0
         return
 
     def __update_config(self, config: dict):
@@ -139,7 +141,16 @@ class GameController:
             return
         stat = ip.get_stat(screen=self.screen, stat_route=self.stat_route)[0]
         if stat and stat != self.pre_stat:
-            self.__echo('Current status: %s' % stat)
+            if stat == 'live':
+                if self.lv_cnt == 0:
+                    l_time = 0
+                else:
+                    l_time = (datetime.datetime.now() - self.lv_time).total_seconds()
+                self.__echo('Live times: %d | Last loop duration: %.2fs' % (self.lv_cnt, l_time))
+                self.lv_cnt += 1
+                self.lv_time = datetime.datetime.now()
+            else:
+                self.__echo('Current status: %s' % stat)
         clicked = self.__btn_clk(stat=stat)
         self.pre_stat = stat
         if clicked:
