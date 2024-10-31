@@ -167,7 +167,6 @@ class GameController:
             adb.restart(15)
             self.st_time = datetime.datetime.now()
 
-
     def play(self):
         try:
             adb.connect(self.serial)
