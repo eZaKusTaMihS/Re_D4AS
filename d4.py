@@ -47,9 +47,9 @@ class GameController:
         self.type = tsk['event_type']
         self.event_route = os.path.join('res', self.type)
 
-    def __echo(self, content):
+    def __echo(self, content, stime=True):
         cur_t = datetime.datetime.now()
-        log = '%s | Runtime: %s | %s' % (cur_t, cur_t - self.st_time, content)
+        log = '%s | Runtime: %s | %s' % (cur_t, cur_t - self.st_time, content) if stime else content
         print(log)
         self.logs.append(log)
 
@@ -148,12 +148,14 @@ class GameController:
             if datetime.datetime.now() - self.lc_time > datetime.timedelta(minutes=self.timeout):
                 self.__echo('Timeout exceeded, trying to restart')
                 adb.restart()
+                self.lc_time = datetime.datetime.now()
         # Timer
-        if (not self.vrf and
+        if ((not self.vrf) and
                 datetime.datetime.now() - self.st_time > datetime.timedelta(hours=self.rhr, minutes=self.rmn) and
                 stat != 'live'):
             adb.restart(15)
             self.st_time = datetime.datetime.now()
+
 
     def play(self):
         try:

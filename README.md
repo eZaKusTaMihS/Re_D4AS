@@ -14,6 +14,7 @@ A script for autoplaying D4DJ Groovy Mix (JP only).
 - Add auto-restart methods to solve possible crash of the game.
 - Provide a solution for being blocked from long-time plays.
 See more information about it [here](#solutions-for-swipe-verification).
+- Fix the trigger condition of timeout restart.
 
 #### Oct 26, 2024
 - Add support for event type: raid
@@ -94,6 +95,9 @@ By the way you are recommended to set your background static
 and screenshot a static part of your live screen and replace the image in the `res/stat/live` folder with it
 to help the script to recognize the live status. Loop time recorder based on live screen may be provided in later updates.
 You may delete the old images in the `live` folder since that's my background.
+
+You may also need to replace the images in `/res/stat/main` and `/res/stat/live_sel` to fit your UI theme.
+Remember only to take static icons (as presented in the original images).
 
 ### Solutions for swipe verification
 #### Fight Against (proved to be feasible)
