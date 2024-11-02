@@ -5,6 +5,8 @@ import time
 import adb
 import img_processor as ip
 
+global st_time
+
 
 class GameController:
     general_btn_route = 'res\\general_btn'
@@ -13,8 +15,9 @@ class GameController:
     logs = []
 
     def __init__(self, config: dict):
+        global st_time
         adb.start()
-        self.st_time = datetime.datetime.now()
+        st_time = datetime.datetime.now()
         general = config['general']
         play = config['play']
         tsk = config['tasks']
@@ -34,6 +37,7 @@ class GameController:
         self.lc_time = datetime.datetime.now()
         self.lv_time = datetime.datetime.now()
         self.lv_cnt = 0
+        self.lv_drt = 0
         return
 
     def __update_config(self, config: dict):
@@ -51,7 +55,7 @@ class GameController:
 
     def __echo(self, content, stime=True):
         cur_t = datetime.datetime.now()
-        log = '%s | Runtime: %s | %s' % (cur_t, cur_t - self.st_time, content) if stime else content
+        log = '%s | Runtime: %s | %s' % (cur_t, cur_t - st_time, content) if stime else content
         print(log)
         self.logs.append(log)
 
@@ -88,20 +92,26 @@ class GameController:
                     if l == (-1, -1):
                         return False
                 x, y = adb.click(l, w, h)
-                time.sleep(0.5)
                 if x > 0 and y > 0:
                     self.__echo('Click @ (%s, %s)' % (x, y))
                 else:
                     self.__echo('Click Failed.')
         return True
 
-    def __loop(self):
+    def __loop(self) -> None:
+        """
+        Inner cycle for game controller.
+        """
+        global st_time
         adb.screenshot(self.screen)
         brt = 0.7
-        st, loc, h, w = ip.get_stat(screen=self.screen, stat_route=self.exception_route)
-        if st:
-            if 'empty_volt' in st:
+        # Handle exception situations in game
+        exc, loc, h, w = ip.get_stat(screen=self.screen, stat_route=self.exception_route)
+        if exc:
+            if 'empty_volt' in exc:
+                # Voltage supplement
                 if self.mode == 'sp':
+                    # Only click start for sp
                     adb.click(loc, w, h)
                     return
                 self.__echo('Voltage Supplement')
@@ -112,6 +122,7 @@ class GameController:
                     time.sleep(brt)
                     adb.click((400, 210), 200, 140)
                 time.sleep(brt)
+                # +1  5drink
                 adb.click((740, 300), 55, 55)
                 time.sleep(brt)
                 adb.click((660, 605), 200, 70)
@@ -119,12 +130,13 @@ class GameController:
                 adb.click((660, 490), 200, 60)
                 time.sleep(1.2)
                 adb.click((540, 490), 200, 60)
-            elif st == 'auto_rej' and self.vrf:
-                # Deal with detection
+            elif exc == 'auto_rej' and self.vrf:
+                # Deal with verification
                 import pygetwindow as gw
                 d4w = gw.getWindowsWithTitle('d4dj')
                 if d4w:
-                    d = d4w[0]
+                    d = [win for win in d4w if win.title == 'd4dj'][0]
+                    # Get focus
                     d.minimize()
                     d.restore()
                     print(gw.getActiveWindow())
@@ -139,38 +151,45 @@ class GameController:
                 adb.click(loc, w, h)
             time.sleep(brt)
             return
+        # Normal status
         stat = ip.get_stat(screen=self.screen, stat_route=self.stat_route)[0]
         if stat and stat != self.pre_stat:
             if stat == 'live':
                 if self.lv_cnt == 0:
                     l_time = 0
+                    self.lv_time = datetime.datetime.now()
                 else:
                     l_time = (datetime.datetime.now() - self.lv_time).total_seconds()
-                self.__echo('Live times: %d | Last loop duration: %.2fs' % (self.lv_cnt, l_time))
+                    self.lv_drt += l_time
+                avg_time = self.lv_drt / self.lv_cnt if self.lv_cnt > 0 else 0
+                self.__echo('Live times: %d | Last loop duration: %.2fs (Avg: %.2fs)' %
+                            (self.lv_cnt, l_time, avg_time))
                 self.lv_cnt += 1
                 self.lv_time = datetime.datetime.now()
             else:
                 self.__echo('Current status: %s' % stat)
         clicked = self.__btn_clk(stat=stat)
         self.pre_stat = stat
+        # Timeout handler
         if clicked:
             self.lc_time = datetime.datetime.now()
         if not clicked:
             if datetime.datetime.now() - self.lc_time > datetime.timedelta(minutes=self.timeout):
                 self.__echo('Timeout exceeded, trying to restart')
                 adb.restart()
+                self.lv_cnt = 0
                 self.lc_time = datetime.datetime.now()
-        # Timer
+        # Rest timer
         if ((not self.vrf) and
-                datetime.datetime.now() - self.st_time > datetime.timedelta(hours=self.rhr, minutes=self.rmn) and
+                datetime.datetime.now() - st_time > datetime.timedelta(hours=self.rhr, minutes=self.rmn) and
                 stat != 'live'):
             adb.restart(15)
-            self.st_time = datetime.datetime.now()
+            st_time = datetime.datetime.now()
 
     def play(self):
         try:
             adb.connect(self.serial)
-            self.st_time = datetime.datetime.now()
+            st_time = datetime.datetime.now()
             while True:
                 self.__loop()
                 if len(self.logs) > 100:
