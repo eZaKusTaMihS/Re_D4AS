@@ -11,7 +11,7 @@ A script for autoplaying D4DJ Groovy Mix (JP only).
 
 ### Recent Updates
 #### Nov 1, 2024
-- Add loop time recorder.
+- Add loop time (+ average(Nov 3)) recorder.
 Now you can see total live times and loop duration in console output and log file.
 Remember to get your live background (see `res/stat/live`) updated.
 
