@@ -35,7 +35,8 @@ class GameController:
         self.type = str(tsk['event_type'])
         self.mode = str(tsk['mode'])
         self.event_route = os.path.join('res', self.type)
-        os.makedirs(self.screen.split('\\')[0], exist_ok=True)
+        os.makedirs('temp\\fin', exist_ok=True)
+        os.makedirs('temp\\screenshots', exist_ok=True)
         self.lc_time = datetime.datetime.now()
         self.lv_time = datetime.datetime.now()
         self.lv_cnt = 0
