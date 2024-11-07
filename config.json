@@ -16,7 +16,7 @@
     "rest_interval": "2:30"
   },
   "tasks": {
-    "event_type": "raid",
-    "mode": "multi"
+    "event_type": "poker",
+    "mode": "solo"
   }
 }

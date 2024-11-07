@@ -4,6 +4,7 @@ import time
 
 import adb
 import img_processor as ip
+import log
 
 global st_time
 
@@ -24,6 +25,7 @@ class GameController:
         self.serial = adb.serial = str(general['serial'])
         self.screen = str(general['screen_route'])
         self.stat_route = str(general['stat_route'])
+        self.live_route = 'res\\live_sel'
         self.timeout = max(5, int(general['timeout']))
         self.voltage = max(0, int(play['voltage']))
         self.sup = bool(play['auto_sup'])
@@ -38,6 +40,7 @@ class GameController:
         self.lv_time = datetime.datetime.now()
         self.lv_cnt = 0
         self.lv_drt = 0
+        self.fst = True
         return
 
     def __update_config(self, config: dict):
@@ -53,19 +56,19 @@ class GameController:
         self.type = tsk['event_type']
         self.event_route = os.path.join('res', self.type)
 
-    def __echo(self, content, stime=True):
-        cur_t = datetime.datetime.now()
-        log = '%s | Runtime: %s | %s' % (cur_t, cur_t - st_time, content) if stime else content
-        print(log)
-        self.logs.append(log)
-
-    def __write_log(self, mode='w', tb=''):
-        with open('log.txt', mode, encoding='utf-8') as f:
-            for log in self.logs:
-                f.write(log + '\n')
-            if tb:
-                f.write(tb)
-        return
+    # def __echo(self, content, stime=True):
+    #     cur_t = datetime.datetime.now()
+    #     log = '%s | Runtime: %s | %s' % (cur_t, cur_t - st_time, content) if stime else content
+    #     print(log)
+    #     self.logs.append(log)
+    #
+    # def __write_log(self, mode='w', tb=''):
+    #     with open('log.txt', mode, encoding='utf-8') as f:
+    #         for log in self.logs:
+    #             f.write(log + '\n')
+    #         if tb:
+    #             f.write(tb)
+    #     return
 
     def __btn_clk(self, stat='general'):
         match stat:
@@ -78,24 +81,28 @@ class GameController:
                 if self.type in ['yell', 'raid']:
                     adb.click((70, 180), 90, 70)
                 else:
-                    adb.click((1000, 180), 160, 120)
+                    if self.mode == 'solo':
+                        adb.click((670, 180), 160, 120)
+                    else:
+                        adb.click((1000, 180), 160, 120)
             case 'live':
-                time.sleep(5)
+                time.sleep(1)
+                pass
             case _:
                 event = 'event' in stat
-                l, h, w, v = ip.match_all_best(self.screen, self.general_btn_route)
+                l, h, w, v = ip.find_best(self.screen, self.general_btn_route)
                 # No matches
                 if l == (-1, -1):
                     # Check event
                     app = self.mode if event else ''
-                    l, h, w, v = ip.match_all_best(self.screen, self.event_route, appointment=app)
+                    l, h, w, v = ip.find_best(self.screen, self.event_route, appointment=app)
                     if l == (-1, -1):
                         return False
-                x, y = adb.click(l, w, h)
-                if x > 0 and y > 0:
-                    self.__echo('Click @ (%s, %s)' % (x, y))
-                else:
-                    self.__echo('Click Failed.')
+                adb.click(l, w, h)
+                # if x > 0 and y > 0:
+                #     log.echo('Click @ (%s, %s)' % (x, y))
+                # else:
+                #     log.echo('Click Failed.')
         return True
 
     def __loop(self) -> None:
@@ -114,7 +121,7 @@ class GameController:
                     # Only click start for sp
                     adb.click(loc, w, h)
                     return
-                self.__echo('Voltage Supplement')
+                log.echo('Voltage Supplement')
                 if self.type == 'battle':
                     adb.click((400, 300), 190, 140)
                 else:
@@ -135,11 +142,12 @@ class GameController:
                 import pygetwindow as gw
                 d4w = gw.getWindowsWithTitle('d4dj')
                 if d4w:
+                    log.echo('Passing verification...')
                     d = [win for win in d4w if win.title == 'd4dj'][0]
                     # Get focus
                     d.minimize()
                     d.restore()
-                    print(gw.getActiveWindow())
+                    log.echo(gw.getActiveWindow())
                     time.sleep(1)
                     # Input recording trigger
                     import keyboard
@@ -162,20 +170,36 @@ class GameController:
                     l_time = (datetime.datetime.now() - self.lv_time).total_seconds()
                     self.lv_drt += l_time
                 avg_time = self.lv_drt / self.lv_cnt if self.lv_cnt > 0 else 0
-                self.__echo('Live times: %d | Last loop duration: %.2fs (Avg: %.2fs)' %
-                            (self.lv_cnt, l_time, avg_time))
+                log.echo('Live times: %d | Last loop duration: %.2fs (Avg: %.2fs)' %
+                         (self.lv_cnt, l_time, avg_time))
                 self.lv_cnt += 1
                 self.lv_time = datetime.datetime.now()
+            elif stat == 'result' and self.type == 'poker':
+                from shutil import copy
+                fn = f'screen_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.png'
+                time.sleep(0.5)
+                adb.screenshot(self.screen)
+                if not ip.detect(self.screen, self.event_route, '_empty_card'):
+                    copy(self.screen, f'temp\\fin\\{fn}')
+                    log.echo(f'Result screenshot saved to {fn}')
+                copy(self.screen, f'temp\\screenshots\\{fn}')
+                log.echo('Poker screenshot saved.')
             else:
-                self.__echo('Current status: %s' % stat)
+                log.echo('Current status: %s' % stat)
         clicked = self.__btn_clk(stat=stat)
         self.pre_stat = stat
         # Timeout handler
         if clicked:
+            self.fst = True
             self.lc_time = datetime.datetime.now()
         if not clicked:
             if datetime.datetime.now() - self.lc_time > datetime.timedelta(minutes=self.timeout):
-                self.__echo('Timeout exceeded, trying to restart')
+                if self.fst:
+                    self.fst = False
+                    l, h, w, v = ip.find_best(self.screen, self.general_btn_route, appointment='_home')
+                    if l != (-1, -1):
+                        adb.click(l, w, h)
+                log.echo('Timeout exceeded, trying to restart')
                 adb.restart()
                 self.lv_cnt = 0
                 self.lc_time = datetime.datetime.now()
@@ -187,16 +211,17 @@ class GameController:
             st_time = datetime.datetime.now()
 
     def play(self):
+        global st_time
         try:
             adb.connect(self.serial)
             st_time = datetime.datetime.now()
             while True:
                 self.__loop()
                 if len(self.logs) > 100:
-                    self.__write_log(mode='w+')
+                    log.write_log(mode='w+')
                     self.logs.clear()
         except KeyboardInterrupt:
-            self.__write_log()
+            log.write_log()
         except:
             import traceback
-            self.__write_log(tb=traceback.format_exc())
+            log.write_log(tb=traceback.format_exc())

@@ -34,12 +34,14 @@ For MuMu user, adb can be found at `MuMuPlayer-12.0\shell\adb.exe`.
 
 ## Preparations
 Set your simulator and make sure the resolution is set to 1280*720.
+
 ![](doc_res/01.png)
 
 Install D4DJ and log into your account.
 
 Test adb.
 Run `adb devices` in cmd to show the devices that are currently connected to adb.
+
 ![](doc_res/02.png)
 
 Then fill the address into `serial` field in `config.json`.

@@ -2,6 +2,8 @@ import numpy as np
 import subprocess
 import os
 
+import log
+
 serial = '127.0.0.1:16416'
 
 
@@ -38,7 +40,7 @@ def click(pos: tuple[int, int], width=1, height=1):
     except:
         return -1, -1
     if r:
-        # print('Click @ (%s, %s)' % (x, y))
+        log.echo('Click @ (%s, %s)' % (x, y))
         return x, y
     print('Click failed.')
     return -1, -1
