@@ -23,6 +23,7 @@ class GameController:
         play = config['play']
         tsk = config['tasks']
         self.serial = adb.serial = str(general['serial'])
+        self.window = str(general['window'])
         self.screen = str(general['screen_route'])
         self.stat_route = str(general['stat_route'])
         self.live_route = 'res\\live_sel'
@@ -79,7 +80,7 @@ class GameController:
                 adb.click((1130, 570), 110, 110)
                 time.sleep(0.5)
             case 'live_sel':
-                if self.type in ['yell', 'raid']:
+                if self.type in ['yell', 'raid'] or self.mode == 'sp':
                     adb.click((70, 180), 90, 70)
                 else:
                     if self.mode == 'solo':
@@ -141,10 +142,10 @@ class GameController:
             elif exc == 'auto_rej' and self.vrf:
                 # Deal with verification
                 import pygetwindow as gw
-                d4w = gw.getWindowsWithTitle('d4dj')
+                d4w = gw.getWindowsWithTitle(self.window)
                 if d4w:
                     log.echo('Passing verification...')
-                    d = [win for win in d4w if win.title == 'd4dj'][0]
+                    d = [win for win in d4w if win.title == self.window][0]
                     # Get focus
                     d.minimize()
                     d.restore()
