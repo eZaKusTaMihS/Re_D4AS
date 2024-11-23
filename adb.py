@@ -59,6 +59,6 @@ def restart(interval=0, pac='com.bushiroad.d4dj', act='com.unity3d.player.UnityP
     interval = abs(int(interval))
     if interval:
         import time
-        print('Restart after %d minutes.' % interval)
+        log.echo('Restart after %d minutes.' % interval)
         time.sleep(interval*60)
     return start(pac, act)

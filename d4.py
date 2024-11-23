@@ -17,7 +17,6 @@ class GameController:
 
     def __init__(self, config: dict):
         global st_time
-        adb.start()
         st_time = datetime.datetime.now()
         general = config['general']
         play = config['play']
@@ -32,7 +31,7 @@ class GameController:
         self.sup = bool(play['auto_sup'])
         self.vrf = bool(play['do_vrf'])
         h, m = str(play['rest_interval']).split(':', maxsplit=1)
-        self.rhr, self.rmn = min(3, abs(int(h))), abs(int(m)) % 60
+        self.rest_interval = datetime.timedelta(hours=min(3, abs(int(h))), minutes=abs(int(m)) % 60)
         self.type = str(tsk['event_type'])
         self.mode = str(tsk['mode'])
         self.event_route = os.path.join('res', self.type)
@@ -78,6 +77,7 @@ class GameController:
                 adb.click((640, 360))
             case 'main':
                 adb.click((1130, 570), 110, 110)
+                self.lv_drt = 0
                 time.sleep(0.5)
             case 'live_sel':
                 if self.type in ['yell', 'raid'] or self.mode == 'sp':
@@ -139,7 +139,7 @@ class GameController:
                 adb.click((660, 490), 200, 60)
                 time.sleep(1.2)
                 adb.click((540, 490), 200, 60)
-            elif exc == 'auto_rej' and self.vrf:
+            elif exc == 'auto_rej':
                 # Deal with verification
                 import pygetwindow as gw
                 d4w = gw.getWindowsWithTitle(self.window)
@@ -206,9 +206,7 @@ class GameController:
                 self.lv_cnt = 0
                 self.lc_time = datetime.datetime.now()
         # Rest timer
-        if ((not self.vrf) and
-                datetime.datetime.now() - st_time > datetime.timedelta(hours=self.rhr, minutes=self.rmn) and
-                stat != 'live'):
+        if (not self.vrf) and datetime.datetime.now() - st_time >= self.rest_interval and stat != 'live':
             adb.restart(15)
             st_time = datetime.datetime.now()
 
@@ -216,6 +214,7 @@ class GameController:
         global st_time
         try:
             adb.connect(self.serial)
+            adb.start()
             st_time = datetime.datetime.now()
             while True:
                 self.__loop()

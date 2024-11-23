@@ -49,7 +49,7 @@ def find_best(target, template_folder, appointment=None, ignore=None) -> tuple[t
     return ml, mh, mw, mx
 
 
-def detect(target: str, template_folder: str, aim: str):
+def detect(target: str, template_folder: str, aim: str) -> bool:
     loc = find_best(target, template_folder, appointment=aim)[0]
     return loc != (-1, -1)
 
