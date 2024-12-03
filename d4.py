@@ -1,6 +1,7 @@
 import datetime
 import os
 import time
+from argparse import Namespace
 
 import adb
 import img_processor as ip
@@ -15,15 +16,15 @@ class GameController:
     pre_stat = ''
     logs = []
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, args: Namespace):
         global st_time
         self.general_btn_route = 'res\\general_btn'
         st_time = datetime.datetime.now()
         general = config['general']
         play = config['play']
         tsk = config['tasks']
-        self.serial = adb.serial = str(general['serial'])
-        self.window = str(general['window'])
+        self.serial = adb.serial = args.serial if args.serial else str(general['serial'])
+        self.window = args.window if args.window else str(general['window'])
         self.screen = str(general['screen_route'])
         self.stat_route = str(general['stat_route'])
         self.live_route = 'res\\live_sel'
