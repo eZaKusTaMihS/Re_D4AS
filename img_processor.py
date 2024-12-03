@@ -94,7 +94,6 @@ class RecResult(dict):
         self['h'] = 0
         self['w'] = 0
         self['val'] = 0.0
-        self.type_d = dict(name=str, loc=tuple, h=int, w=int, val=float)
 
     def setvals(self, **kwargs):
         for k, v in kwargs.items():
@@ -106,7 +105,7 @@ class RecResult(dict):
             if isinstance(value, type(self[name])):
                 self[name] = value
             else:
-                raise TypeError(f'Attribute \'{name}\' must be {type(self[name])}.')
+                raise TypeError(f'Attribute \'{name}\' is expected to be {type(self[name])} but {type(value)} provided.')
         else:
             raise AttributeError(f'No attribute named \'{name}\'.')
         return

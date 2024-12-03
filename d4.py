@@ -17,6 +17,7 @@ class GameController:
 
     def __init__(self, config: dict):
         global st_time
+        self.general_btn_route = 'res\\general_btn'
         st_time = datetime.datetime.now()
         general = config['general']
         play = config['play']
@@ -32,6 +33,8 @@ class GameController:
         self.vrf = bool(play['do_vrf'])
         h, m = str(play['rest_interval']).split(':', maxsplit=1)
         self.rest_interval = datetime.timedelta(hours=min(3, abs(int(h))), minutes=abs(int(m)) % 60)
+        self.search_route: list[str] = play['search_route']
+        self.search_route = self.search_route if self.search_route else ["$general_btn_route", "$event_route"]
         self.type = str(tsk['event_type'])
         self.mode = str(tsk['mode'])
         self.event_route = os.path.join('res', self.type)
@@ -42,6 +45,17 @@ class GameController:
         self.lv_cnt = 0
         self.lv_drt = 0
         self.fst = True
+        for _ in range(len(self.search_route)):
+            route = self.search_route[0]
+            if route.startswith('$'):
+                name = route.replace('$', '')
+                if name not in self.__dict__.keys():
+                    self.search_route.remove(route)
+                    continue
+                self.search_route.append(self.__getattribute__(name))
+            else:
+                self.search_route.append(route)
+            self.search_route.remove(route)
         return
 
     def __update_config(self, config: dict):
@@ -77,7 +91,7 @@ class GameController:
                 adb.click((640, 360))
             case 'main':
                 adb.click((1130, 570), 110, 110)
-                self.lv_drt = 0
+                self.lv_drt = 00
                 time.sleep(0.5)
             case 'live_sel':
                 if self.type in ['yell', 'raid'] or self.mode == 'sp':
@@ -201,10 +215,11 @@ class GameController:
                     l, h, w, v = ip.find_best(self.screen, self.general_btn_route, appointment='_home')
                     if l != (-1, -1):
                         adb.click(l, w, h)
-                log.echo('Timeout exceeded, trying to restart')
-                adb.restart()
-                self.lv_cnt = 0
-                self.lc_time = datetime.datetime.now()
+                else:
+                    log.echo('Timeout exceeded, trying to restart')
+                    adb.restart()
+                    self.lv_cnt = 0
+                    self.lc_time = datetime.datetime.now()
         # Rest timer
         if (not self.vrf) and datetime.datetime.now() - st_time >= self.rest_interval and stat != 'live':
             adb.restart(15)

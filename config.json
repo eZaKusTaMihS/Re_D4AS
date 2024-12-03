@@ -14,10 +14,11 @@
     "voltage": 1,
     "auto_sup": true,
     "do_vrf": true,
-    "rest_interval": "2:30"
+    "rest_interval": "2:30",
+    "search_route": ["$general_btn_route", "$event_route"]
   },
   "tasks": {
-    "event_type": "medley",
-    "mode": "sp"
+    "event_type": "poker",
+    "mode": "multi"
   }
 }
