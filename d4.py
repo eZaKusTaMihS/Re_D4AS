@@ -25,7 +25,7 @@ class GameController:
         tsk = config['tasks']
         self.serial = adb.serial = args.serial if args.serial else str(general['serial'])
         self.window = args.window if args.window else str(general['window'])
-        self.screen = str(general['screen_route'])
+        self.screen = args.screen_route if args.screen_route else str(general['screen_route'])
         self.stat_route = str(general['stat_route'])
         self.live_route = 'res\\live_sel'
         self.timeout = max(5, int(general['timeout']))
