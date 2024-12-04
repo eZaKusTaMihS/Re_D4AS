@@ -178,6 +178,7 @@ class GameController:
             return
         # Normal status
         stat = ip.get_stat(screen=self.screen, stat_route=self.stat_route)[0]
+        stat = 'main' if 'main' in stat else stat
         if stat and stat != self.pre_stat:
             if stat == 'live':
                 if self.lv_cnt == 0:
@@ -239,6 +240,14 @@ class GameController:
                     self.logs.clear()
         except KeyboardInterrupt:
             log.write_log()
-        except:
+        except Exception:
             import traceback
             log.write_log(tb=traceback.format_exc())
+            log.echo('Script crashed, restarting...')
+            raise ControllerCrashException
+
+
+class ControllerCrashException(Exception):
+    def __init__(self, msg=''):
+        self.msg = msg
+        super().__init__(msg)
