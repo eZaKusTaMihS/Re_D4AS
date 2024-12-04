@@ -46,17 +46,9 @@ class GameController:
         self.lv_cnt = 0
         self.lv_drt = 0
         self.fst = True
-        for _ in range(len(self.search_route)):
-            route = self.search_route[0]
-            if route.startswith('$'):
-                name = route.replace('$', '')
-                if name not in self.__dict__.keys():
-                    self.search_route.remove(route)
-                    continue
-                self.search_route.append(self.__getattribute__(name))
-            else:
-                self.search_route.append(route)
-            self.search_route.remove(route)
+        self.search_route = [_ for _ in [
+            (lambda s: self.__dict__[s] if s in self.__dict__.keys() else None)(r.replace('$', '')) if r.startswith(
+                '$') else r for r in self.search_route] if _]
         return
 
     def __update_config(self, config: dict):

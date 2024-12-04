@@ -86,6 +86,10 @@ def get_stat(screen: str, stat_route: str):
     return stat
 
 
+class ImgProcessor:
+    pass
+
+
 class RecResult(dict):
     def __init__(self):
         super().__init__()
