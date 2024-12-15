@@ -112,6 +112,7 @@ class GameController:
                 #     log.echo('Click @ (%s, %s)' % (x, y))
                 # else:
                 #     log.echo('Click Failed.')
+        time.sleep(0.5)
         return True
 
     def __loop(self) -> None:
