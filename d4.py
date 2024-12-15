@@ -18,6 +18,7 @@ class GameController:
 
     def __init__(self, config: dict, args: Namespace):
         global st_time
+        self.args = args
         self.general_btn_route = 'res\\general_btn'
         st_time = datetime.datetime.now()
         general = config['general']
