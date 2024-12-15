@@ -18,7 +18,7 @@
     "search_route": ["$general_btn_route", "$event_route"]
   },
   "tasks": {
-    "event_type": "poker",
+    "event_type": "bingo",
     "mode": "multi"
   }
 }
