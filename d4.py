@@ -241,6 +241,7 @@ class GameController:
                     self.logs.clear()
         except KeyboardInterrupt:
             log.write_log()
+            exit(1919810)
         except Exception:
             import traceback
             log.write_log(tb=traceback.format_exc())
