@@ -134,9 +134,13 @@ class GameController:
                 if self.type == 'battle':
                     adb.click((400, 300), 190, 140)
                 else:
-                    adb.click(loc, w, h)
-                    time.sleep(brt)
-                    adb.click((400, 210), 200, 140)
+                    if exc.endswith('if'):
+                        adb.click(loc, w, h)
+                    else:
+                        adb.click(loc, w, h)
+                        time.sleep(brt)
+                        loc, h, w, _ = ip.find_best(self.screen, self.general_btn_route, appointment='_empty_volt_item')
+                        adb.click(loc, w, h)
                 time.sleep(brt)
                 # +1  5drink
                 adb.click((740, 300), 55, 55)
@@ -221,10 +225,14 @@ class GameController:
 
     def play(self):
         global st_time
+        st_time = datetime.datetime.now()
         try:
-            adb.connect(self.serial)
+            attempts = 0
+            while not adb.connect(self.serial) and attempts < 5:
+                attempts += 1
+                log.echo(f'Attempt {attempts} in 5 secs')
+                time.sleep(5)
             adb.start()
-            st_time = datetime.datetime.now()
             while True:
                 self.__loop()
                 if len(self.logs) > 100:

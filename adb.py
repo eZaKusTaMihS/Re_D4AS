@@ -8,6 +8,7 @@ serial = '127.0.0.1:16416'
 
 
 def __exec(__statement: str):
+    # p = subprocess.run(__statement, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
     p = subprocess.Popen(__statement, shell=True, stdout=subprocess.PIPE)
     while p.poll() is None:
         if p.wait() != 0:
@@ -26,11 +27,22 @@ def screenshot(__route: str):
     return __exec('adb -s %s exec-out screencap -p > %s' % (serial, __route))
 
 
-def connect(__device=serial):
-    return __exec('adb connect %s' % __device)
+def connect(__device=serial) -> bool:
+    f = __exec('adb connect %s' % __device)
+    if not f:
+        log.echo(f'Failed to establish connection to {__device}.')
+    return f
 
 
 def click(pos: tuple[int, int], width=1, height=1):
+    """
+    Click randomly in a range [ ``pos``, ( ``pos[0]`` + ``width``, ``pos[1]`` + ``height`` ) ).
+    The upper bound is excluded.
+    :param pos: The starting coordinates. Counts from the upper-left corner where the position is (0, 0).
+    :param width: Width range.
+    :param height: Height range.
+    :return: The actual point where the click occurs.
+    """
     width, height = max(1, width), max(1, height)
     x, y = pos
     x += np.random.randint(width)

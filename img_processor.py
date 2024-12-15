@@ -34,18 +34,21 @@ def find_best(target, template_folder, appointment=None, ignore=None) -> tuple[t
     ignore = [] if not ignore else ignore if type(ignore) is list else [ignore]
     tg = cv.imread(target)
     ml, mh, mw, mx = (-1, -1), 0, 0, -1
-    for tp in os.listdir(template_folder):
-        if tp.replace('.png', '') in ignore:
-            continue
-        if appointment:
-            if tp.replace('.png', '') != appointment:
+    if not os.path.isdir(template_folder):
+        pass
+    else:
+        for tp in os.listdir(template_folder):
+            if tp.replace('.png', '') in ignore:
                 continue
-        elif not tp.endswith('.png') or tp.startswith('_'):
-            continue
-        tpl = cv.imread(os.path.join(template_folder, tp))
-        loc, h, w, val = __match(tg, tpl)
-        if val > mx:
-            ml, mh, mw, mx = loc, h, w, val
+            if appointment:
+                if tp.replace('.png', '') != appointment:
+                    continue
+            elif not tp.endswith('.png') or tp.startswith('_'):
+                continue
+            tpl = cv.imread(os.path.join(template_folder, tp))
+            loc, h, w, val = __match(tg, tpl)
+            if val > mx:
+                ml, mh, mw, mx = loc, h, w, val
     return ml, mh, mw, mx
 
 
