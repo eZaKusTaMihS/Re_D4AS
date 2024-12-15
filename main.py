@@ -20,6 +20,8 @@ def mian(args: argparse.Namespace):
 
 
 if __name__ == '__main__':
+    import subprocess
+    subprocess.run('pull.bat')
     parser = argparse.ArgumentParser()
     parser.add_argument('--serial', '-s', type=str, default='', required=False)
     parser.add_argument('--window', '-w', type=str, default='', required=False)
