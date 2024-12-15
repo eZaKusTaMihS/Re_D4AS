@@ -7,6 +7,13 @@ crash_cnt = 0
 
 
 def mian(args: argparse.Namespace):
+    if args.force_update:
+        import subprocess
+        import threading
+        subprocess.run('pull.bat')
+        args.force_update = False
+        threading.Thread(target=mian, args=(args, )).start()
+        exit()
     global crash_cnt
     config = json.load(open('config.json'))
     controller = GameController(config, args)
@@ -20,9 +27,8 @@ def mian(args: argparse.Namespace):
 
 
 if __name__ == '__main__':
-    import subprocess
-    subprocess.run('pull.bat')
     parser = argparse.ArgumentParser()
+    parser.add_argument('--force-update', '-u', type=bool, default=True)
     parser.add_argument('--serial', '-s', type=str, default='', required=False)
     parser.add_argument('--window', '-w', type=str, default='', required=False)
     parser.add_argument('--screen-route', '-S', type=str, default='', required=False)
