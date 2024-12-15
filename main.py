@@ -12,8 +12,9 @@ def mian(args: argparse.Namespace):
         import threading
         subprocess.run('pull.bat')
         args.force_update = False
-        threading.Thread(target=mian, args=(args, )).start()
-        exit()
+        mian(args)
+        # threading.Thread(target=mian, args=(args, )).start()
+        # exit()
     global crash_cnt
     config = json.load(open('config.json'))
     controller = GameController(config, args)
