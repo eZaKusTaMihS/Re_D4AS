@@ -1,0 +1,24 @@
+{
+  "display": {
+    "width": 1280,
+    "height": 720
+  },
+  "general": {
+    "serial": "127.0.0.1:16416",
+    "window": "d4dj",
+    "screen_route": "temp\\screen.png",
+    "stat_route": "res\\stat",
+    "timeout": 5
+  },
+  "play": {
+    "voltage": 1,
+    "auto_sup": true,
+    "do_vrf": true,
+    "rest_interval": "2:30",
+    "search_route": ["$general_btn_route", "$event_route"]
+  },
+  "tasks": {
+    "event_type": "bingo",
+    "mode": "multi"
+  }
+}
