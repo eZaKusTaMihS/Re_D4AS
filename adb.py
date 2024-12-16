@@ -1,24 +1,26 @@
 import numpy as np
-import subprocess
 import os
 
 import log
+import utils
 
 serial = '127.0.0.1:16416'
 
 
 def __exec(__statement: str):
+    # import subprocess
     # p = subprocess.run(__statement, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
-    p = subprocess.Popen(__statement, shell=True, stdout=subprocess.PIPE)
-    while p.poll() is None:
-        if p.wait() != 0:
-            print("Failed")
-            return False
-        else:
-            re = p.stdout.readlines()
-            for result in re:
-                print(result)
-    return True
+    # p = subprocess.Popen(__statement, shell=True, stdout=subprocess.PIPE)
+    # while p.poll() is None:
+    #     if p.wait() != 0:
+    #         print("Failed")
+    #         return False
+    #     else:
+    #         re = p.stdout.readlines()
+    #         for result in re:
+    #             print(result)
+    # return True
+    return utils.execute(__statement)
 
 
 def screenshot(__route: str):

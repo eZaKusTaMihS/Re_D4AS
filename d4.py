@@ -6,6 +6,7 @@ from argparse import Namespace
 import adb
 import img_processor as ip
 import log
+import utils
 
 global st_time
 
@@ -16,32 +17,32 @@ class GameController:
     pre_stat = ''
     logs = []
 
-    def __init__(self, config: dict, args: Namespace):
+    def __init__(self, args: Namespace):
         global st_time
-        self.args = args
-        self.general_btn_route = 'res\\general_btn'
+        config = utils.load_json(args.config)
         st_time = datetime.datetime.now()
         general = config['general']
-        play = config['play']
-        tsk = config['tasks']
+        game = config['game']
         self.serial = adb.serial = args.serial if args.serial else str(general['serial'])
         self.window = args.window if args.window else str(general['window'])
         self.screen = args.screen_route if args.screen_route else str(general['screen_route'])
+        self.general_btn_route = str(general['general_btn_route'])
         self.stat_route = str(general['stat_route'])
-        self.live_route = 'res\\live_sel'
-        self.timeout = max(5, int(general['timeout']))
-        self.voltage = max(0, int(play['voltage']))
-        self.sup = bool(play['auto_sup'])
-        self.vrf = bool(play['do_vrf'])
-        h, m = str(play['rest_interval']).split(':', maxsplit=1)
+        self.exception_route = str(general['exception_route'])
+        self.poker_temp_dir = str(general['poker_temp_dir'])
+        self.poker_fin_dir = str(general['poker_fin_dir'])
+        self.sup = bool(game['auto_sup'])
+        self.vrf = bool(game['do_verification'])
+        h, m = str(game['rest_interval']).split(':', maxsplit=1)
+        self.timeout = max(5, int(game['timeout']))
         self.rest_interval = datetime.timedelta(hours=min(3, abs(int(h))), minutes=abs(int(m)) % 60)
-        self.search_route: list[str] = play['search_route']
+        self.search_route: list[str] = game['search_route']
         self.search_route = self.search_route if self.search_route else ["$general_btn_route", "$event_route"]
-        self.type = str(tsk['event_type'])
-        self.mode = str(tsk['mode'])
+        self.type = str(game['event_type'])
+        self.mode = str(game['mode'])
         self.event_route = os.path.join('res', self.type)
-        os.makedirs('temp\\fin', exist_ok=True)
-        os.makedirs('temp\\screenshots', exist_ok=True)
+        os.makedirs(self.poker_fin_dir, exist_ok=True)
+        os.makedirs(self.poker_temp_dir, exist_ok=True)
         self.lc_time = datetime.datetime.now()
         self.lv_time = datetime.datetime.now()
         self.lv_cnt = 0
@@ -196,9 +197,9 @@ class GameController:
                 time.sleep(0.5)
                 adb.screenshot(self.screen)
                 if not ip.detect(self.screen, self.event_route, '_empty_card'):
-                    copy(self.screen, f'temp\\fin\\{fn}')
+                    copy(self.screen, '%s %s' % (self.poker_fin_dir, fn))
                     log.echo(f'Result screenshot saved to {fn}')
-                copy(self.screen, f'temp\\screenshots\\{fn}')
+                copy(self.screen, '%s %s' % (self.poker_temp_dir, fn))
                 log.echo('Poker screenshot saved.')
             else:
                 log.echo('Current status: %s' % stat)
@@ -242,7 +243,7 @@ class GameController:
                     self.logs.clear()
         except KeyboardInterrupt:
             log.write_log()
-            exit(1919810)
+            exit(114514)
         except Exception:
             import traceback
             log.write_log(tb=traceback.format_exc())

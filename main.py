@@ -1,38 +1,40 @@
-import json
 import argparse
-import subprocess
+import utils
+import update
 from d4 import GameController, ControllerCrashException
 
 
-crash_cnt = 0
+def start(_args: argparse.Namespace):
+    try:
+        controller = GameController(_args)
+        controller.play()
+    except KeyboardInterrupt:
+        exit(114514)
+    except Exception as e:
+        print(e)
+        return False
 
 
 def mian(_args: argparse.Namespace):
-    global crash_cnt
-    config = json.load(open('config.json'))
-    controller = GameController(config, _args)
-    try:
-        controller.play()
-    except ControllerCrashException:
-        if crash_cnt >= 3:
-            return
-        crash_cnt += 1
-        mian(_args)
-
-
-def update():
-    with open('pull.bat', 'r', encoding='utf-8') as f:
-        subprocess.run(f.readline().strip())
+    cnt = 3
+    while not start(_args):
+        cnt -= 1
+        if cnt == 0:
+            break
 
 
 if __name__ == '__main__':
+    info = utils.load_json('info.json')
+    conda_env = info['conda_env']
+    if conda_env:
+        utils.execute('conda activate %s' % conda_env)
     parser = argparse.ArgumentParser()
     parser.add_argument('--force-update', '-u', type=bool, default=False, required=False)
+    parser.add_argument('--config', '-c', type=str, default='usr\\config.json', required=False)
     parser.add_argument('--serial', '-s', type=str, default='', required=False)
     parser.add_argument('--window', '-w', type=str, default='', required=False)
     parser.add_argument('--screen-route', '-S', type=str, default='', required=False)
     args = parser.parse_args()
     if args.force_update:
-        args.force_update = False
-        update()
+        update.update(info['ignore_list'])
     mian(args)

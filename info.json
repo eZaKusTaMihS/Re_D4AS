@@ -1,0 +1,4 @@
+{
+  "conda_env": "d4as",
+  "ignore_list": ["usr\\config.json", "res\\stat\\live\\ded.png"]
+}
