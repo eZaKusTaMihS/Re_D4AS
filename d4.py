@@ -17,12 +17,13 @@ class GameController:
     pre_stat = ''
     logs = []
 
-    def __init__(self, args: Namespace):
+    def __init__(self, args: Namespace, crash_cnt: int):
         global st_time
         config = utils.load_json(args.config)
         st_time = datetime.datetime.now()
         general = config['general']
         game = config['game']
+        self.crash_cnt = crash_cnt
         self.serial = adb.serial = args.serial if args.serial else str(general['serial'])
         self.window = args.window if args.window else str(general['window'])
         self.screen = args.screen_route if args.screen_route else str(general['screen_route'])
@@ -43,8 +44,10 @@ class GameController:
         self.event_route = os.path.join('res', self.type)
         os.makedirs(self.poker_fin_dir, exist_ok=True)
         os.makedirs(self.poker_temp_dir, exist_ok=True)
-        self.lc_time = datetime.datetime.now()
         self.lv_time = datetime.datetime.now()
+        """
+        Records the latest time when a live starts. 
+        """
         self.lv_cnt = 0
         self.lv_drt = 0
         self.fst = True
@@ -178,6 +181,7 @@ class GameController:
         # Normal status
         stat = ip.get_stat(screen=self.screen, stat_route=self.stat_route)[0]
         stat = 'main' if 'main' in stat else stat
+        # Live Detection
         if stat and stat != self.pre_stat:
             if stat == 'live':
                 if self.lv_cnt == 0:
@@ -203,24 +207,19 @@ class GameController:
                 log.echo('Poker screenshot saved.')
             else:
                 log.echo('Current status: %s' % stat)
-        clicked = self.__btn_clk(stat=stat)
+        self.__btn_clk(stat=stat)
         self.pre_stat = stat
-        # Timeout handler
-        if clicked:
-            self.fst = True
-            self.lc_time = datetime.datetime.now()
-        if not clicked:
-            if datetime.datetime.now() - self.lc_time > datetime.timedelta(minutes=self.timeout):
-                if self.fst:
-                    self.fst = False
-                    l, h, w, v = ip.find_best(self.screen, self.general_btn_route, appointment='_home')
-                    if l != (-1, -1):
-                        adb.click(l, w, h)
-                else:
-                    log.echo('Timeout exceeded, trying to restart')
-                    adb.restart()
-                    self.lv_cnt = 0
-                    self.lc_time = datetime.datetime.now()
+        # Timeout handler, certain time after last live
+        if datetime.datetime.now() - self.lv_time > datetime.timedelta(minutes=self.timeout):
+            if self.fst:
+                self.fst = False
+                l, h, w, v = ip.find_best(self.screen, self.general_btn_route, appointment='_home')
+                if l != (-1, -1):
+                    adb.click(l, w, h)
+            else:
+                log.echo('Timeout exceeded, trying to restart')
+                adb.restart()
+                self.fst = True
         # Rest timer
         if (not self.vrf) and datetime.datetime.now() - st_time >= self.rest_interval and stat != 'live':
             adb.restart(15)
@@ -247,11 +246,27 @@ class GameController:
         except Exception:
             import traceback
             log.write_log(tb=traceback.format_exc())
-            log.echo('Script crashed, restarting...')
-            raise ControllerCrashException
+            if self.crash_cnt < 5:
+                log.echo(f'Script crashed, restarting count {self.crash_cnt} ...')
+                raise ControllerCrashException
+            else:
+                log.echo('Script crashed too many times, requires human takeover.')
+                raise ControllerLastCrashException
 
 
-class ControllerCrashException(Exception):
+class D4ASException(Exception):
+    def __init__(self, msg=''):
+        self.msg = msg
+        super().__init__(msg)
+
+
+class ControllerCrashException(D4ASException):
+    def __init__(self, msg=''):
+        self.msg = msg
+        super().__init__(msg)
+
+
+class ControllerLastCrashException(D4ASException):
     def __init__(self, msg=''):
         self.msg = msg
         super().__init__(msg)

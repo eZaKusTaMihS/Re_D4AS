@@ -1,25 +1,26 @@
 import argparse
 import utils
 import update
-from d4 import GameController, ControllerCrashException
+from d4 import GameController, D4ASException
 
 
-def start(_args: argparse.Namespace):
+def start(_args: argparse.Namespace, crash_cnt: int):
     try:
-        controller = GameController(_args)
+        controller = GameController(_args, crash_cnt)
         controller.play()
     except KeyboardInterrupt:
         exit(114514)
-    except Exception as e:
-        print(e)
+    except D4ASException:
+        import traceback
+        print(traceback.format_exc())
         return False
 
 
 def mian(_args: argparse.Namespace):
-    cnt = 3
-    while not start(_args):
-        cnt -= 1
-        if cnt == 0:
+    cnt = 1
+    while not start(_args, cnt):
+        cnt += 1
+        if cnt > 5:
             break
 
 

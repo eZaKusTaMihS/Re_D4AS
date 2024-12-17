@@ -9,7 +9,7 @@ def execute(statement: str) -> bool:
             return False
         else:
             res = ''
-            for r in [_.strip('\n') for _ in p.stdout.readlines()]:
+            for r in [e.strip('\n') for e in p.stdout.readlines()]:
                 res = res.join(r + '\n') if r else res
             if res:
                 print(res.strip('\n'))
