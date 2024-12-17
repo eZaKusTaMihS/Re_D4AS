@@ -1,6 +1,5 @@
 import argparse
 import utils
-import update
 from d4 import GameController, D4ASException
 
 
@@ -37,5 +36,5 @@ if __name__ == '__main__':
     parser.add_argument('--screen-route', '-S', type=str, default='', required=False)
     args = parser.parse_args()
     if args.force_update:
-        update.update(info['ignore_list'])
+        utils.execute('python update.py')
     mian(args)
