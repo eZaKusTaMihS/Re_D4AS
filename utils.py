@@ -4,7 +4,7 @@ import json
 
 def execute(statement: str) -> bool:
     p = subprocess.Popen(statement, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8')
-    while p.poll() is None:
+    if p.poll() is None:
         if p.wait() != 0:
             return False
         else:
