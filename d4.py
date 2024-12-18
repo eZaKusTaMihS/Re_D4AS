@@ -44,7 +44,7 @@ class GameController:
         self.event_route = os.path.join('res', self.type)
         os.makedirs(self.poker_fin_dir, exist_ok=True)
         os.makedirs(self.poker_temp_dir, exist_ok=True)
-        self.lv_time = datetime.datetime.now()
+        self.llv_time = self.lv_time = datetime.datetime.now()
         """
         Records the latest time when a live starts. 
         """
@@ -186,7 +186,6 @@ class GameController:
             if stat == 'live':
                 if self.lv_cnt == 0:
                     l_time = 0
-                    self.lv_time = datetime.datetime.now()
                 else:
                     l_time = (datetime.datetime.now() - self.lv_time).total_seconds()
                     self.lv_drt += l_time
@@ -194,7 +193,7 @@ class GameController:
                 log.echo('Live times: %d | Last loop duration: %.2fs (Avg: %.2fs)' %
                          (self.lv_cnt, l_time, avg_time))
                 self.lv_cnt += 1
-                self.lv_time = datetime.datetime.now()
+                self.llv_time = self.lv_time = datetime.datetime.now()
             elif stat == 'result' and self.type == 'poker':
                 from shutil import copy
                 fn = f'screen_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.png'
@@ -210,7 +209,7 @@ class GameController:
         self.__btn_clk(stat=stat)
         self.pre_stat = stat
         # Timeout handler, certain time after last live
-        if datetime.datetime.now() - self.lv_time > datetime.timedelta(minutes=self.timeout):
+        if datetime.datetime.now() - self.llv_time > datetime.timedelta(minutes=self.timeout):
             if self.fst:
                 self.fst = False
                 l, h, w, v = ip.find_best(self.screen, self.general_btn_route, appointment='_home')
@@ -219,6 +218,7 @@ class GameController:
             else:
                 log.echo('Timeout exceeded, trying to restart')
                 adb.restart()
+                self.llv_time = datetime.datetime.now()
                 self.fst = True
         # Rest timer
         if (not self.vrf) and datetime.datetime.now() - st_time >= self.rest_interval and stat != 'live':
