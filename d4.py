@@ -246,7 +246,7 @@ class GameController:
             import traceback
             log.write_log(tb=traceback.format_exc())
             if self.crash_cnt < 5:
-                log.echo(f'Script crashed, restarting count {self.crash_cnt} in 60 secs...')
+                log.echo(f'Script crashed, restarting count {self.crash_cnt}...')
                 raise ControllerCrashException
             else:
                 log.echo('Script crashed too many times, requires human takeover.')

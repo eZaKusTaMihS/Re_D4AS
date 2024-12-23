@@ -1,4 +1,6 @@
 import argparse
+import os
+
 import utils
 import start
 
@@ -19,11 +21,11 @@ def form_update(ignore_list=None, bat_file='update.bat') -> str:
 
 def reform_parser(args_dict: dict[str, any]) -> str:
     res = ''
-    for k, v in args_dict:
+    for k, v in args_dict.items():
         if not v:
-            pass
-        flag_k = '--'.join(k.replace('_', '-'))
-        res = res.join('%s %s ' % (flag_k, str(v)))
+            continue
+        flag_k = f'--{k.replace('_', '-')}'
+        res += f'{flag_k} {v} '
     return res.strip()
 
 
@@ -34,20 +36,34 @@ def form_start(args: argparse.Namespace, conda_env: str, bat_file='start.bat') -
         if conda_env:
             bat.write(f'conda activate {conda_env}\n')
         parser_str = reform_parser(ad)
-        bat.writelines([f'python start.py {parser_str}', '@pause'])
+        bat.write(f'python start.py {parser_str}\n')
     return bat_file
 
 
 def main():
-    info = utils.load_json('info.json')
-    conda_env = info['conda_env']
-    ignore_list = info['ignore_list']
-    args = parser.parse_args()
-    if args.force_update:
-        update_f = form_update(ignore_list)
-        utils.execute(update_f)
-    start_f = form_start(args, conda_env)
-    utils.execute(start_f)
+    update_f, start_f = '', ''
+    try:
+        info = utils.load_json('info.json')
+        conda_env = info['conda_env']
+        ignore_list = info['ignore_list']
+        args = parser.parse_args()
+        if args.force_update:
+            update_f = form_update(ignore_list)
+            utils.execute(update_f)
+        start_f = form_start(args, conda_env)
+        utils.exec_on_new_window(start_f)
+    finally:
+        try:
+            os.remove(update_f)
+        except FileNotFoundError:
+            pass
+        finally:
+            try:
+                os.remove(start_f)
+            except FileNotFoundError:
+                pass
+            finally:
+                pass
 
 
 if __name__ == '__main__':

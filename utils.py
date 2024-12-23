@@ -16,6 +16,11 @@ def execute(statement: str) -> bool:
     return True
 
 
+def exec_on_new_window(statement: str):
+    p = subprocess.Popen(['cmd', '/c', statement], creationflags=subprocess.CREATE_NEW_CONSOLE)
+    p.wait()
+
+
 def load_json(path: str) -> dict:
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
