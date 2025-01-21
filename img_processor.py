@@ -30,8 +30,8 @@ def find_best(target, template_folder, appointment=None, ignore=None) -> tuple[t
     width;
     score of the match.
     """
-    appointment = appointment.rsplit('.', maxsplit=1)[0].strip() if type(appointment) is str else ''
-    ignore = [] if not ignore else ignore if type(ignore) is list else [ignore]
+    appointment = appointment.rsplit('.', maxsplit=1)[0].strip() if isinstance(appointment, str) else ''
+    ignore = [] if not ignore else ignore if isinstance(ignore, list) else [ignore]
     tg = cv.imread(target)
     ml, mh, mw, mx = (-1, -1), 0, 0, -1
     if not os.path.isdir(template_folder):

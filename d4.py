@@ -89,7 +89,7 @@ class GameController:
                 adb.click((640, 360))
             case 'main':
                 adb.click((1130, 570), 110, 110)
-                self.lv_drt = 00
+                # self.lv_drt = 0
                 time.sleep(0.5)
             case 'live_sel':
                 if self.type in ['yell', 'raid'] or self.mode == 'sp':
@@ -181,31 +181,47 @@ class GameController:
         # Normal status
         stat = ip.get_stat(screen=self.screen, stat_route=self.stat_route)[0]
         stat = 'main' if 'main' in stat else stat
-        # Live Detection
-        if stat and stat != self.pre_stat:
-            if stat == 'live':
-                if self.lv_cnt == 0:
-                    l_time = 0
+        if stat != self.pre_stat:
+            if self.pre_stat == 'live':
+                self.llv_time = datetime.datetime.now()
+            if stat:
+                # Live Detection
+                if stat == 'live':
+                    if self.lv_cnt == 0:
+                        l_time = 0
+                    else:
+                        l_time = (datetime.datetime.now() - self.lv_time).total_seconds()
+                        self.lv_drt += l_time
+                    avg_time = self.lv_drt / self.lv_cnt if self.lv_cnt > 0 else 0
+                    log.echo('Live times: %d | Last loop duration: %.2fs (Avg: %.2fs)' %
+                             (self.lv_cnt, l_time, avg_time))
+                    self.lv_cnt += 1
+                    self.llv_time = self.lv_time = datetime.datetime.now()
+                elif stat == 'result' and self.type == 'poker':
+                    # Save poker result
+                    from shutil import copy
+                    cur_time_str = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+                    date = cur_time_str[:8]
+                    if date not in os.listdir(self.poker_fin_dir):
+                        os.mkdir('%s\\%s' % (self.poker_fin_dir, date))
+                    poker_fin_dir = '%s\\%s' % (self.poker_fin_dir, date)
+                    fn = f'screen_{cur_time_str}.png'
+                    time.sleep(0.5)
+                    adb.screenshot(self.screen)
+                    if not ip.detect(self.screen, self.event_route, '_empty_card'):
+                        # Poker slot is full
+                        # Whether next or not
+                        # while not ip.detect(self.screen, self.general_btn_route, 'nxt1'):
+                        #     self.__btn_clk(stat=stat)
+                        #     time.sleep(1)
+                        #     adb.screenshot(self.screen)
+                        # Then save the record
+                        copy(self.screen, '%s\\%s' % (poker_fin_dir, fn))
+                        log.echo(f'Result screenshot saved to {fn}')
+                    copy(self.screen, '%s\\%s' % (self.poker_temp_dir, fn))
+                    log.echo('Poker screenshot saved.')
                 else:
-                    l_time = (datetime.datetime.now() - self.lv_time).total_seconds()
-                    self.lv_drt += l_time
-                avg_time = self.lv_drt / self.lv_cnt if self.lv_cnt > 0 else 0
-                log.echo('Live times: %d | Last loop duration: %.2fs (Avg: %.2fs)' %
-                         (self.lv_cnt, l_time, avg_time))
-                self.lv_cnt += 1
-                self.llv_time = self.lv_time = datetime.datetime.now()
-            elif stat == 'result' and self.type == 'poker':
-                from shutil import copy
-                fn = f'screen_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.png'
-                time.sleep(0.5)
-                adb.screenshot(self.screen)
-                if not ip.detect(self.screen, self.event_route, '_empty_card'):
-                    copy(self.screen, '%s %s' % (self.poker_fin_dir, fn))
-                    log.echo(f'Result screenshot saved to {fn}')
-                copy(self.screen, '%s %s' % (self.poker_temp_dir, fn))
-                log.echo('Poker screenshot saved.')
-            else:
-                log.echo('Current status: %s' % stat)
+                    log.echo('Current status: %s' % stat)
         self.__btn_clk(stat=stat)
         self.pre_stat = stat
         # Timeout handler, certain time after last live
@@ -215,6 +231,10 @@ class GameController:
                 l, h, w, v = ip.find_best(self.screen, self.general_btn_route, appointment='_home')
                 if l != (-1, -1):
                     adb.click(l, w, h)
+                    time.sleep(10)
+            elif 'main' in stat:
+                self.llv_time = datetime.datetime.now()
+                self.fst = True
             else:
                 log.echo('Timeout exceeded, trying to restart')
                 adb.restart()
