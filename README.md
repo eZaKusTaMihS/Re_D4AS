@@ -3,38 +3,8 @@ A script for autoplaying D4DJ Groovy Mix.
 
 _Author: ゼカツまし_
 
-[//]: # (## LOGS)
-
-[//]: # (### TODOs)
-
-[//]: # (- Pack the script into exe)
-
-[//]: # (- Add UI &#40;maybe won't&#41;)
-
-[//]: # (- Add more settings that can be set automatically other than manually in game)
-
-[//]: # ()
-[//]: # (### Recent Updates)
-
-[//]: # (#### Nov 1, 2024)
-
-[//]: # (- Add loop time &#40;+ average&#40;Nov 3&#41;&#41; recorder. Now you can see total live times and loop duration in console output and log file. Remember to get your live background &#40;see `res/stat/live`&#41; updated.)
-
-[//]: # ()
-[//]: # (#### Oct 31, 2024)
-
-[//]: # (- Add auto-restart methods to solve possible crash of the game.)
-
-[//]: # (- Provide a solution for being blocked from long-time plays. See more information about it [here]&#40;#solutions-for-swipe-verification&#41;.)
-
-[//]: # (- Fix the trigger condition of timeout restart.)
-
-[//]: # ()
-[//]: # (#### Oct 26, 2024)
-
-[//]: # (- Add support for event type: raid)
-
-[//]: # (- Voltage supplement fixed)
+## Recent Updates
+***You may see changelogs [here](https://blog.shimatsukaze.com/Log/d4as-log/).***
 
 ## **Requirements**
 - Get your simulator ready. [MuMu Player 12](https://mumu.163.com) is recommended.
