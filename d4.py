@@ -1,5 +1,6 @@
 import datetime
 import os
+import sys
 import time
 from argparse import Namespace
 
@@ -35,7 +36,7 @@ class GameController:
         self.sup = bool(game['auto_sup'])
         self.vrf = bool(game['do_verification'])
         h, m = str(game['rest_interval']).split(':', maxsplit=1)
-        self.timeout = max(5, int(game['timeout']))
+        self.timeout = int(game['timeout'])
         self.rest_interval = datetime.timedelta(hours=min(3, abs(int(h))), minutes=abs(int(m)) % 60)
         self.search_route: list[str] = game['search_route']
         self.search_route = self.search_route if self.search_route else ["$general_btn_route", "$event_route"]
@@ -82,6 +83,18 @@ class GameController:
     #         if tb:
     #             f.write(tb)
     #     return
+
+    def __live_detect(self):
+        if self.lv_cnt == 0:
+            l_time = 0
+        else:
+            l_time = (datetime.datetime.now() - self.lv_time).total_seconds()
+            self.lv_drt += l_time
+        avg_time = self.lv_drt / self.lv_cnt if self.lv_cnt > 0 else 0
+        log.echo('Live times: %d | Last loop duration: %.2fs (Avg: %.2fs)' %
+                 (self.lv_cnt, l_time, avg_time))
+        self.lv_cnt += 1
+        self.llv_time = self.lv_time = datetime.datetime.now()
 
     def __btn_clk(self, stat='general'):
         match stat:
@@ -187,16 +200,7 @@ class GameController:
             if stat:
                 # Live Detection
                 if stat == 'live':
-                    if self.lv_cnt == 0:
-                        l_time = 0
-                    else:
-                        l_time = (datetime.datetime.now() - self.lv_time).total_seconds()
-                        self.lv_drt += l_time
-                    avg_time = self.lv_drt / self.lv_cnt if self.lv_cnt > 0 else 0
-                    log.echo('Live times: %d | Last loop duration: %.2fs (Avg: %.2fs)' %
-                             (self.lv_cnt, l_time, avg_time))
-                    self.lv_cnt += 1
-                    self.llv_time = self.lv_time = datetime.datetime.now()
+                    self.__live_detect()
                 elif stat == 'result' and self.type == 'poker':
                     # Save poker result
                     from shutil import copy
@@ -225,6 +229,8 @@ class GameController:
         self.__btn_clk(stat=stat)
         self.pre_stat = stat
         # Timeout handler, certain time after last live
+        if self.timeout <= 0:
+            return
         if datetime.datetime.now() - self.llv_time > datetime.timedelta(minutes=self.timeout):
             if self.fst:
                 self.fst = False
@@ -256,6 +262,8 @@ class GameController:
                 time.sleep(5)
             adb.start()
             while True:
+                # if self.lv_cnt > 99:
+                #     exit(1919810)
                 self.__loop()
                 if len(self.logs) > 100:
                     log.write_log(mode='w+')
