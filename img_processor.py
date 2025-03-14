@@ -18,13 +18,14 @@ def match_by_path(target: str, template: str):
     return __match(tg, tp)
 
 
-def find_best(target, template_folder, appointment=None, ignore=None) -> tuple[tuple[int, int], int, int, float]:
+def find_best(target, template_folder, appointment=None, ignore=None, n=None) -> tuple[tuple[int, int], int, int, float]:
     """
     Find the template that matches the most.
     :param str target: Path of target image to be matched.
     :param str template_folder: Path of template folder (without hierarchical structs).
     :param str appointment: Name of template you want to find. Default to be empty.
     :param list[str] ignore: List of names of templates to ignore. Default to be empty.
+    :param TempStr n: name of the matched template.
     :return: Pos of the up-left corner of the matched image (set to (-1, -1) if fails);
     height;
     width;
@@ -49,6 +50,8 @@ def find_best(target, template_folder, appointment=None, ignore=None) -> tuple[t
             loc, h, w, val = __match(tg, tpl)
             if val > mx:
                 ml, mh, mw, mx = loc, h, w, val
+                if n is not None:
+                    n.set(tp.replace('.png', ''))
     return ml, mh, mw, mx
 
 
@@ -91,6 +94,24 @@ def get_stat(screen: str, stat_route: str):
 
 class ImgProcessor:
     pass
+
+
+class TempStr:
+    def __init__(self, s=''):
+        self.s = s
+
+    def __str__(self):
+        return self.s
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, str):
+            return self.s == other
+        if isinstance(other, TempStr):
+            return self.s == other.s
+        return False
+
+    def set(self, new: str) -> None:
+        self.s = new
 
 
 class RecResult(dict):

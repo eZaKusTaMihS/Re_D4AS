@@ -117,7 +117,10 @@ class GameController:
                 pass
             case _:
                 event = 'event' in stat
-                l, h, w, v = ip.find_best(self.screen, self.general_btn_route)
+                n = ip.TempStr()
+                l, h, w, v = ip.find_best(self.screen, self.general_btn_route, n=n)
+                if ('start' in str(n) or n == 'reh') and (self.lv_cnt == 0 or self.lv_drt > 90):
+                    self.__live_detect()
                 # No matches
                 if l == (-1, -1):
                     # Check event
@@ -198,10 +201,11 @@ class GameController:
             if self.pre_stat == 'live':
                 self.llv_time = datetime.datetime.now()
             if stat:
-                # Live Detection
-                if stat == 'live':
-                    self.__live_detect()
-                elif stat == 'result' and self.type == 'poker':
+                # Live Detection (Moved to btn_clk for stability)
+                # if stat == 'live':
+                #     self.__live_detect()
+                # elif stat == 'result' and self.type == 'poker':
+                if stat == 'result' and self.type == 'poker':
                     # Save poker result
                     from shutil import copy
                     cur_time_str = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
