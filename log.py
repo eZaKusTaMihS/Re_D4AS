@@ -27,7 +27,7 @@ def echo(content='', pr_time=True, auto_write=True):
     curt = datetime.datetime.now()
     log = '%s | Runtime: %s | %s' % (curt.strftime('%Y-%m-%d %H:%M:%S'), (curt - d4.st_time),
                                      content) if pr_time else content
-    print(log)
+    print(log, flush=True)
     __append_log(log, auto_write)
 
 

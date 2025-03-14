@@ -1,14 +1,28 @@
 import argparse
-import utils
-from d4 import GameController, ControllerCrashException
+import pickle
+from d4 import GameController, D4ASException
 
 
-def main(_args: argparse.Namespace):
+def start(crash_cnt: int) -> bool:
     try:
-        controller = GameController(_args)
+        controller = GameController(args, crash_cnt)
         controller.play()
     except KeyboardInterrupt:
-        exit(114514)
-    except Exception as e:
-        print(e)
-        exit(1919810)
+        exit()
+    except D4ASException:
+        import traceback
+        print(traceback.format_exc())
+        return False
+
+
+def mian():
+    cnt = 1
+    while not start(cnt):
+        cnt += 1
+        if cnt > 5:
+            break
+
+
+if __name__ == '__main__':
+    args = pickle.load(open('temp\\args', 'rb'))
+    mian()

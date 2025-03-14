@@ -1,41 +1,67 @@
 import argparse
+import subprocess
+import pickle
+
 import utils
-import update
-from d4 import GameController, D4ASException
 
 
-def start(_args: argparse.Namespace, crash_cnt: int):
+def __exec(command: str, hint: str = ''):
+    if hint:
+        print(hint)
+    result = subprocess.run(command, shell=True, text=True, capture_output=True, encoding='utf-8')
+    if result.returncode != 0:
+        print(f'An error occurred while executing {command}: {result.stderr}')
+        return None
+    return result.stdout.strip()
+
+
+def update():
+    if __exec(f'git fetch origin master', 'Fetching from repository...') is None:
+        return
+    stat = __exec(f'git status')
+    if 'Your branch is up to date' in stat:
+        print('Already up to date.')
+    else:
+        print('Updating...')
+        if __exec(f'git pull origin master') is None:
+            print('Update failed.')
+            return
+    print('Update completed. Now starting.')
+
+
+def mian():
+    process = subprocess.Popen(f'{py} start.py',
+                               shell=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               text=True,
+                               encoding='utf-8')
     try:
-        controller = GameController(_args, crash_cnt)
-        controller.play()
+        while True:
+            output = process.stdout.readline()
+            if output == '' and process.poll() is not None:
+                break
+            if output:
+                print(output.strip('\n'))
     except KeyboardInterrupt:
+        import signal
+        process.send_signal(signal.CTRL_C_EVENT)
+        print('See you.')
         exit(114514)
-    except D4ASException:
-        import traceback
-        print(traceback.format_exc())
-        return False
-
-
-def mian(_args: argparse.Namespace):
-    cnt = 1
-    while not start(_args, cnt):
-        cnt += 1
-        if cnt > 5:
-            break
 
 
 if __name__ == '__main__':
     info = utils.load_json('info.json')
-    conda_env = info['conda_env']
-    if conda_env:
-        utils.execute('conda activate %s' % conda_env)
+    py = info['python-path']
+    repo = info['repo']
     parser = argparse.ArgumentParser()
-    parser.add_argument('--force-update', '-u', type=bool, default=False, required=False)
+    parser.add_argument('--update', '-u', type=bool, default=True, required=False)
     parser.add_argument('--config', '-c', type=str, default='usr\\config.json', required=False)
     parser.add_argument('--serial', '-s', type=str, default='', required=False)
     parser.add_argument('--window', '-w', type=str, default='', required=False)
     parser.add_argument('--screen-route', '-S', type=str, default='', required=False)
     args = parser.parse_args()
-    if args.force_update:
-        update.update(info['ignore_list'])
-    mian(args)
+    pickle.dump(args, open('temp\\args', 'wb'))
+    if args.update:
+        update()
+    mian()

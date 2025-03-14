@@ -1,4 +1,4 @@
 {
-  "conda_env": "d4as",
-  "ignore_list": ["usr\\config.json", "res\\stat\\live\\ded.png"]
+  "python-path": "e:\\application\\anaconda3\\envs\\d4as\\python.exe",
+  "repo": "https://github.com/eZaKusTaMihS/Re_D4AS.git"
 }
