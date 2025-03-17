@@ -53,8 +53,14 @@ def find_best(target, template_folder, appointment=None, ignore=None) -> tuple[t
 
 
 def detect(target: str, template_folder: str, aim: str) -> bool:
-    loc = find_best(target, template_folder, appointment=aim)[0]
-    return loc != (-1, -1)
+    """
+    Detect whether the specific pattern exists in current screen.
+    :param target: current screen
+    :param template_folder: the folder to look for templates
+    :param aim: name of the pattern image
+    :return: whether the specific pattern exists in current screen
+    """
+    return find_best(target, template_folder, appointment=aim)[0] != (-1, -1)
 
 
 def match_all_avg(tg, templates):
