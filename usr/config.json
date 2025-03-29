@@ -15,7 +15,7 @@
     "rest_interval": "2:30",
     "timeout": 5,
     "search_route": ["$general_btn_route", "$event_route"],
-    "event_type": "yell",
+    "event_type": "battle",
     "mode": "multi"
   }
 }
