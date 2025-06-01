@@ -5,12 +5,14 @@ import pickle
 import utils
 
 
-def __exec(command: str, hint: str = ''):
-    if hint:
-        print(hint)
+global py_path
+
+def __exec(command: str, info: str = ''):
+    if info:
+        print(info)
     result = subprocess.run(command, shell=True, text=True, capture_output=True, encoding='utf-8')
     if result.returncode != 0:
-        print(f'An error occurred while executing {command}: {result.stderr}')
+        print(f'An error occurred while executing command \"{command}\": {result.stderr}')
         return None
     return result.stdout.strip()
 
@@ -30,7 +32,7 @@ def update():
 
 
 def mian():
-    process = subprocess.Popen(f'{py} start.py',
+    process = subprocess.Popen(f'{py_path} start.py',
                                shell=True,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
@@ -50,10 +52,14 @@ def mian():
         exit(114514)
 
 
-if __name__ == '__main__':
+def load_info():
+    global py_path
     info = utils.load_json('info.json')
-    py = info['python-path']
-    repo = info['repo']
+    py_path = info.get('python-path', 'python3')
+
+
+def main():
+    load_info()
     parser = argparse.ArgumentParser()
     parser.add_argument('--update', '-u', type=bool, default=True, required=False)
     parser.add_argument('--config', '-c', type=str, default='usr\\config.json', required=False)
@@ -65,3 +71,7 @@ if __name__ == '__main__':
     if args.update:
         update()
     mian()
+
+
+if __name__ == '__main__':
+    main()
